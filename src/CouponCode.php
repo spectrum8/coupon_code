@@ -103,7 +103,7 @@ class CouponCode {
 			$result .= $this->_checkdigitAlg1($part + 1, $result);
 
 			$try++;
-			if ($this->_isBadWord($result) || $this->_isValidWhenSwapped($result)) {
+			if ($this->_isBadWord($result) || $this->_isValidWhenSwapped($part + 1, $result)) {
 				continue;
 			}
 			$part++;
@@ -167,16 +167,32 @@ class CouponCode {
 		return isset($this->_badWords[str_rot13($value)]);
 	}
 
-	/**
-	 * Verifies that a given code part is still valid its symbols
-	 * are swapped (undesirable).
-	 *
-	 * @param string $value
-	 * @return boolean
-	 */
-	protected function _isValidWhenSwapped($value) {
-		return false;
-	}
+    /**
+     * Verifies that a given code part is still valid its symbols
+     * are swapped (undesirable).
+     *
+     * @param int $part
+     * @param string $value
+     * @return bool
+     */
+    protected function _isValidWhenSwapped($part, $value) {
+        $arr = str_split($value);
+        $length = count($arr);
+        for ($i = 1; $i < $length; $i++) {
+            if ($arr[$i - 1] === $arr[$i]) {
+                // transposition not relevant
+                continue;
+            }
+            $tmpArr = $arr;
+            $tmpArr[$i] = $arr[$i - 1];
+            $tmpArr[$i - 1] = $arr[$i];
+            $checkDigit = array_pop($tmpArr);
+            if ($this->_checkdigitAlg1($part, join('', $tmpArr)) === $checkDigit) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 	/**
 	 * Normalizes a given code using dash separators.
