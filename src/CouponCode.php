@@ -10,8 +10,6 @@
 
 namespace CouponCode;
 
-use Exception;
-
 class CouponCode {
 
 	/**
@@ -52,41 +50,49 @@ class CouponCode {
 		'OHGG', 'SRPX', 'OBBO', 'WVFZ', 'WVMM', 'CUNG'
 	];
 
-	/**
-	 * Constructor.
-	 *
-	 * @param array $config Available options are `parts` and `partLength`.
-	 */
+    /**
+     * Constructor.
+     *
+     * @param array $config Available options are `parts` and `partLength`.
+     *
+     * @throws \CouponCode\Exception If config values are out of bounds
+     */
 	public function __construct(array $config = []) {
 		$config += [
 			'parts' => null,
-			'partLength' => null
+			'partLength' => null,
+            'useCheckDigit' => null,
 		];
 		if (isset($config['parts'])) {
-			$this->_parts = $config['parts'];
+			$this->_parts = intval($config['parts']);
 		}
 		if (isset($config['partLength'])) {
-			$this->_partLength = $config['partLength'];
+			$this->_partLength = intval($config['partLength']);
+            if ($this->_partLength < 2 || $this->_partLength > 15) {
+                throw new Exception('Part length must be between 2 and 15');
+            }
 		}
 	}
 
-	/**
-	 * Generates a coupon code using the format `XXXX-XXXX-XXXX`.
-	 *
-	 * The 4th character of each part is a checkdigit.
-	 *
-	 * Not all letters and numbers are used, so if a person enters the letter 'O' we
-	 * can automatically correct it to the digit '0' (similarly for I => 1, S => 5, Z
-	 * => 2).
-	 *
-	 * The code generation algorithm avoids 'undesirable' codes. For example any code
-	 * in which transposed characters happen to result in a valid checkdigit will be
-	 * skipped.  Any generated part which happens to spell an 'inappropriate' 4-letter
-	 * word (e.g.: 'P00P') will also be skipped.
-	 *
-	 * @param string $random Allows to directly support a plaintext i.e. for testing.
-	 * @return string Dash separated and normalized code.
-	 */
+    /**
+     * Generates a coupon code using the format `XXXX-XXXX-XXXX`.
+     *
+     * The last character of each part is a checkdigit.
+     *
+     * Not all letters and numbers are used, so if a person enters the letter 'O' we
+     * can automatically correct it to the digit '0' (similarly for I => 1, S => 5, Z
+     * => 2).
+     *
+     * The code generation algorithm avoids 'undesirable' codes. For example any code
+     * in which transposed characters happen to result in a valid checkdigit will be
+     * skipped.  Any generated part which happens to spell an 'inappropriate' 4-letter
+     * word (e.g.: 'P00P') will also be skipped.
+     *
+     * @param string $random Allows to directly support a plaintext i.e. for testing.
+     * @return string Dash separated and normalized code.
+     *
+     * @throws \CouponCode\Exception
+     */
 	public function generate($random = null) {
 		$results = [];
 
@@ -177,7 +183,7 @@ class CouponCode {
      */
     protected function _isValidWhenSwapped($part, $value) {
         $arr = str_split($value);
-        $length = count($arr);
+        $length = $this->_partLength;
         for ($i = 1; $i < $length; $i++) {
             if ($arr[$i - 1] === $arr[$i]) {
                 // transposition not relevant
@@ -249,12 +255,14 @@ class CouponCode {
 		return $string;
 	}
 
-	/**
-	 * Generates a cryptographically secure sequence of bytes.
-	 *
-	 * @param integer $bytes Number of bytes to return.
-	 * @return string
-	 */
+    /**
+     * Generates a cryptographically secure sequence of bytes.
+     *
+     * @param integer $bytes Number of bytes to return.
+     * @return string
+     *
+     * @throws \CouponCode\Exception
+     */
 	protected function _random($bytes) {
 		if (is_readable('/dev/urandom')) {
 			$stream = fopen('/dev/urandom', 'rb');
@@ -266,8 +274,7 @@ class CouponCode {
 		if (function_exists('mcrypt_create_iv')) {
 			return mcrypt_create_iv($bytes, MCRYPT_DEV_RANDOM);
 		}
-		throw new Exception("No source for generating a cryptographically secure seed found.");
+		throw new Exception('No source for generating a cryptographically secure seed found.');
 	}
-}
 
-?>
+}

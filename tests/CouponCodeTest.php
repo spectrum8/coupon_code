@@ -109,6 +109,10 @@ class CouponCodeTest extends \PHPUnit_Framework_TestCase {
 		$subject = new CouponCode(['parts' => 2]);
 		$this->assertTrue($subject->validate('1K7Q-CTFM'));
 	}
+
+	public function testSwapDetection() {
+        $this->assertTrue(false);
+    }
 }
 
 ?>
