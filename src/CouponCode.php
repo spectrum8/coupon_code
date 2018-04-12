@@ -247,7 +247,9 @@ class CouponCode {
 			fclose($stream);
 			return $result;
 		}
-		if (function_exists('mcrypt_create_iv')) {
+		if (function_exists('random_bytes')) {
+			return random_bytes($bytes);
+		} elseif (function_exists('mcrypt_create_iv')) {
 			return mcrypt_create_iv($bytes, MCRYPT_DEV_RANDOM);
 		}
 		throw new Exception("No source for generating a cryptographically secure seed found.");
