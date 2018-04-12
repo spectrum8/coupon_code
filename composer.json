@@ -1,8 +1,8 @@
 {
-    "name": "atelierdisko/coupon_code",
+    "name": "spectrum8/coupon_code",
     "description": "PHP library to generate and validate coupon code strings.",
     "keywords": ["coupon", "voucher", "code", "token", "key"],
-    "homepage": "https://github.com/atelierdisko/coupon_code",
+    "homepage": "https://github.com/spectrum8/coupon_code",
     "license": "BSD-3-clause",
     "authors": [
         {
@@ -17,7 +17,7 @@
         "phpunit/phpunit": ">=4.0.0"    
     },
     "suggest": {
-      "ext-mcrypt": "The mcrypt extension must be installed if /dev/urandom is not available."
+      "ext-mcrypt": "The mcrypt extension must be installed if /dev/urandom and random_bytes (PHP7) is not available."
     },
     "autoload": {
         "psr-4": { "CouponCode\\": "src/" }
